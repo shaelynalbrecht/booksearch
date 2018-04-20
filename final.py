@@ -92,7 +92,7 @@ def get_books_and_initialize(soup):
             genres.append(genre)
 
         count += 1
-        if count > 20:
+        if count > 6:
             check = "no"
 
         is_there_a_next = soup.find(class_="next_page disabled")
@@ -139,6 +139,28 @@ def results_by_genre():
                                line=dict(color='#000000', width=2)))
 
     py.plot([trace], filename='styled_pie_chart')
+
+    statement = '''
+        SELECT Count(*)
+        FROM Genres
+    '''
+    count = cur.execute(statement)
+    count = count.fetchone()[0]
+    if count > 10:
+        print("Your results have more than 10 genres!")
+        command = input("Would you like to see a list of the 10 most common genres? (y/n): ")
+        if command == "y":
+            statement = '''
+                SELECT G.Name
+                FROM Books
+                JOIN Genres AS G
+                ON GenreId = G.Id
+                GROUP BY G.Name
+                ORDER BY Count(*) DESC LIMIT 10
+            '''
+            cur.execute(statement)
+            
+
     conn.close()
 
 # what the average ratings are for each genre of the books in the search results
@@ -275,27 +297,22 @@ if __name__ == "__main__":
         print('*           term if you want to see books          *')
         print('*           with your term(s) in the title!        *')
         print('*                                                  *')
-        print('*      (Then enter "thanks" if you want to move    *')
-        print('*               on to data visualization           *')
-        print('*                          OR                      *')
-        print('*            Enter "help" if you need help)        *')
         print('*                                                  *')
         search_term = input('********** keywords: ')
         while search_term != 'thanks':
-            if search_term == "help":
-                h = "help"
-                print(h)
-            else:
-                create_database()
-                print("Collecting book results for: " + search_term + "!!")
-                soup = get_soup(search_term)
-                books, authors, genres = get_books_and_initialize(soup)
-                insert_stuff(books, authors, genres)
-                update_stuff(books)
-                #book_options(books, authors, genres, words)
-                file.write(search_term)
+            create_database()
+            print("Collecting book results for: " + search_term + "!!")
+            soup = get_soup(search_term)
+            books, authors, genres = get_books_and_initialize(soup)
+            insert_stuff(books, authors, genres)
+            update_stuff(books)
+            #book_options(books, authors, genres, words)
+            file.write(search_term)
 
-            print('*** Your search results are in! ')
+            print('***          Your search results are in!           *')
+            print('*         Enter "thanks" if you\'re ready to        *')
+            print('*           move on to data visualization          *')
+            print('')
             search_term = input('*** Enter "thanks" to move on: ')
 
         file.close()
@@ -322,16 +339,12 @@ if __name__ == "__main__":
     print('*              Okay, let\'s look at                 *')
     print('*                  some graphs!                    *')
     print('*             Enter "Okay!" to start,              *')
-    print('*               "exit" to leave, or                *')
-    print('*               "help" for options.                *')
+    print('*               or "exit" to leave.                *')
     print()
     command = input("Response : ")
 
     while command != "yes" and command != "exit":
-        if command == "help":
-            h = "help"
-            print(h)
-        elif command == "Okay!" or command == "no":
+        if command == "Okay!" or command == "no":
             book_options(books, authors, genres, currentdatabase)
 
         command = input("Are you sure you want to quit? (yes/no): ")
