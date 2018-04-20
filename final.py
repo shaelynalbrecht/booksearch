@@ -159,7 +159,12 @@ def results_by_genre():
                 ORDER BY Count(*) DESC LIMIT 10
             '''
             cur.execute(statement)
-            
+            count = 1
+            for row in cur:
+                print(str(count) + ". " + row[0])
+                count += 1
+
+
 
     conn.close()
 
@@ -209,6 +214,35 @@ def average_ratings_by_genre(search):
 
     fig = go.Figure(data=data, layout=layout)
     py.plot(fig, filename='text-hover-bar')
+
+    command = input("Do you want to see the highest rated book for a specific genre? (y/n): ")
+    while command != "n":
+        command = input("Type the name of the genre: ")
+        print()
+        statement = '''
+            SELECT Title, Authors.Name, Genres.Name, Rating, NumPages, [Desc],
+            Authors.AvgRating, Authors.About
+            FROM Books
+            JOIN Genres
+            ON Books.GenreId = Genres.Id
+            JOIN Authors
+            ON Books.AuthorId = Authors.Id
+            WHERE Genres.Name == "{}"
+            ORDER BY Rating DESC LIMIT 1
+        '''.format(command)
+        results = cur.execute(statement)
+        r = results.fetchone()
+        hrbook = Book(r[0], r[1], r[2], r[3], r[4], r[5])
+        hrauthor = Author(r[1], r[6], r[7])
+        print(hrbook)
+        print()
+        command = input("Do you want to see info about this author? (y/n): ")
+        if command == "y":
+            print()
+            print(hrauthor)
+            print()
+        command = input("Do you want to look up another genre? (y/n): ")
+
     conn.close()
 
 
@@ -231,6 +265,41 @@ def num_pages_distribution():
     data = [go.Histogram(x=x)]
 
     py.plot(data, filename='NumPages histogram')
+
+    command = input("Would you like more specifics? (y/n): ")
+    if command == "y":
+        print("Do you want to see info for the book")
+        print("with the maximum or minimum # of pages?")
+        command = input("(Max/Min): ")
+        print()
+        statement = '''
+            SELECT {}(NumPages)
+            FROM Books
+        '''.format(command)
+        results = cur.execute(statement)
+        r = results.fetchone()[0]
+        statement = '''
+            SELECT Title, a.Name, g.Name, Rating, NumPages, [Desc], a.AvgRating,
+            a.About
+            FROM Books
+            JOIN Authors as a
+            ON Books.AuthorId = a.Id
+            JOIN Genres as g
+            ON Books.GenreId = g.Id
+            WHERE NumPages = {}
+        '''.format(r)
+        results = cur.execute(statement)
+        r = results.fetchone()
+        maxminbook = Book(r[0], r[1], r[2], r[3], r[4], r[5])
+        maxminauthor = Author(r[1], r[6], r[7])
+        print(maxminbook)
+        print()
+        command = input("Do you want to see info about this author? (y/n): ")
+        if command == "y":
+            print()
+            print(maxminauthor)
+            print()
+
     conn.close()
 
 # most commonly used words in the descriptions
@@ -264,7 +333,33 @@ def most_common_words():
     plt.axis("off")
     plt.show()
 
+def print_help():
+    print('****************************************************')
+    print('*            Yay for Data Visualization!!          *')
+    print('*                                                  *')
+    print('*                 Type "1" to see:                 *')
+    print('*         What percent of the search results       *')
+    print('*                are in each genre                 *')
+    print('*                                                  *')
+    print('*                 Type "2" to see:                 *')
+    print('*        The average ratings for each genre        *')
+    print('*                                                  *')
+    print('*                 Type "3" to see:                 *')
+    print('*         A distribution of the # of pages         *')
+    print('*        that the books in the results have        *')
+    print('*                                                  *')
+    print('*                 Type "4" to see:                 *')
+    print('*            A wordcloud visualization of          *')
+    print('*            the most commonly used words          *')
+    print('*              in the book descriptions!           *')
+    print('*                                                  *')
+    print('*         (type "exit" if you want to leave)       *')
+    print('*                                                  *')
+
 def book_options(books, authors, genres, search):
+    print_help()
+    print('*      (type "help" if you forget these choices)   *')
+    print('*                                                  *')
     option = input("What do you want to do? ")
 
     while option != "exit":
@@ -276,6 +371,8 @@ def book_options(books, authors, genres, search):
             num_pages_distribution()
         elif option == "4":
             most_common_words()
+        elif option == "help":
+            print_help()
         else:
             print("Please enter a valid command!")
         option = input("Now what do you want to do? ")

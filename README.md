@@ -26,7 +26,11 @@ book_options():
   other functions (results_by_genre, average_ratings_by_genre, num_pages_distribution,
   or most_common_words).
   Each of the four functions makes calls to the database to select specific
-  fields of information, which are then used to create plotly graphs! 
+  fields of information, which are then used to create plotly graphs!
+Classes:
+  I have a Book class and an Author class: During web scraping, I collect the
+  data about each book and author, and put it into objects. Then, I use the
+  objects to populate the database!
 
 USER GUIDE:
   If this is your first time running the program, you will need to run it with
@@ -48,3 +52,9 @@ USER GUIDE:
   If at any point you want to exit the program, simply type "exit".
   Otherwise, if you're ready to start visualizing data, type "Okay!"
   You will then be presented with several options.
+  By typing 1, 2, 3, or 4, you can choose which display you want to see!
+  By typing "help", you can see what the different options show, and each
+  individual option also has additional questions that it will ask you!
+
+Thanks so much for checking out my project! :) 
+~ Shaelyn Albrecht
